@@ -1,0 +1,98 @@
+Metadata-Version: 2.4
+Name: plot-backend
+Version: 0.1.0
+Summary: Backend API for PLOT, a mini-mission generator
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: fastapi<1.0,>=0.115
+Requires-Dist: uvicorn[standard]<1.0,>=0.30
+Requires-Dist: pydantic-settings<3.0,>=2.5
+Provides-Extra: dev
+Requires-Dist: pytest<10,>=8; extra == "dev"
+Requires-Dist: httpx<1.0,>=0.27; extra == "dev"
+
+# PLOT Backend
+
+Початковий бекенд для PLOT
+На поточному етапі реалізовано структуру сервісу, конфігурацію, тестовий `GET /health`
+і автоматичні тести. Авторизація, база даних і генератор місій ще не реалізовані.
+
+## Вимоги
+
+- Python 3.11 або новіший
+- `pip`
+- Git (необов'язково для локального запуску)
+
+## Запуск у нормальних ОС (Linux/macOS)
+
+Виконуйте команди з кореня директорії `PLOT-backend`:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -e ".[dev]"
+cp .env.example .env
+python -m uvicorn plot_api.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+## Запуск у Windows (PowerShell)
+
+```powershell
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -e ".[dev]"
+Copy-Item .env.example .env
+python -m uvicorn plot_api.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+Якщо PowerShell забороняє активацію, можна запускати команди через
+`.\.venv\Scripts\python.exe` без активації.
+
+## Перевірка
+
+Відкрийте у браузері:
+
+- **Health check:** http://127.0.0.1:8000/health
+- **Swagger UI (документація API):** http://127.0.0.1:8000/docs
+
+Має вибити на `GET /health`:
+
+```json
+{"status": "ok"}
+```
+
+Або перевірте в терміналі:
+
+```bash
+curl http://127.0.0.1:8000/health
+```
+
+## Тести
+
+У другому терміналі (після активації `.venv`):
+
+```bash
+python -m pytest -q
+```
+
+Тести перевіряють HTTP-код і JSON для `/health`, OpenAPI документацію
+та базовий CORS для локального Angular-фронтенду (:4200).
+
+
+## Налаштування
+
+Скопіюйте `.env.example` у `.env`; цей файл не повинен потрапляти до Git.
+`FRONTEND_ORIGINS` — адреси дозволених фронтендів через кому
+(за замовчуванням Angular `:4200`).
+
+## Інтеграція з Angular
+
+Angular зазвичай працює на `http://localhost:4200`, а FastAPI — на `http://127.0.0.1:8000`.
+Тому ми дозволили адресу Angular у налаштуванні `FRONTEND_ORIGINS`.
+
+У Angular можна створити сервіс з `HttpClient` та викликати `GET http://127.0.0.1:8000/health`.
+Приклад коду й пояснення — у `docs/ANGULAR.md`.
+
+
+
