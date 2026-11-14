@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from plot_api.api.health import router as health_router
 from plot_api.core.config import get_settings
 
+from plot_api.auth import router as auth_router
 
 def create_app() -> FastAPI:
     settings = get_settings()
@@ -24,6 +25,7 @@ def create_app() -> FastAPI:
     )
 
     application.include_router(health_router)
+    application.include_router(auth_router)
 
     @application.get("/")
     def root():
