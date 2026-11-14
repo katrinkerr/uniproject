@@ -6,6 +6,10 @@ from plot_api.core.config import get_settings
 
 from plot_api.auth import router as auth_router
 
+from fastapi import Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
+
 def create_app() -> FastAPI:
     settings = get_settings()
 
@@ -14,6 +18,25 @@ def create_app() -> FastAPI:
         version=settings.app_version,
         description="Backend API for the PLOT mini-mission app.",
     )
+
+    @application.exception_handler(RequestValidationError)
+    async def validation_error(
+        request: Request,
+        exc: RequestValidationError
+    ):
+        errors = [
+            {
+                key: value
+                for key, value in error.items()
+                if key not in ("input", "ctx")
+            }
+            for error in exc.errors()
+        ]
+
+        return JSONResponse(
+            status_code=422,
+            content={"detail": errors}
+        )
 
     # Allow the team's local development frontend to call the backend.
     application.add_middleware(
