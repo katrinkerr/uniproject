@@ -1,0 +1,115 @@
+<main class="onboarding">
+  <div class="orb orb-a" aria-hidden="true"></div>
+  <div class="orb orb-b" aria-hidden="true"></div>
+
+  <header class="header">
+    <a class="brand" routerLink="/" aria-label="Plot — на головну">PLOT.</a>
+    <nav class="navigation" aria-label="Автентифікація">
+      <app-ui-button label="Зареєструватися" variant="primary" link="/register"></app-ui-button>
+      <app-ui-button label="Увійти" variant="secondary" link="/login"></app-ui-button>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <div class="hero-copy">
+      <h1 class="hero-title">Plot<br />Generator</h1>
+      <p class="hero-description">
+        Генеруй міні-місії на день та відкривай для себе маленькі перемоги
+      </p>
+    </div>
+    <div class="hero-cta">
+      <app-ui-button label="Зареєструватися" variant="primary" link="/register"></app-ui-button>
+    </div>
+  </section>
+
+  <section class="inside" id="features">
+    <h2 class="title">Що на тебе чекає всередині?</h2>
+
+    <h3 class="sub">Рівні складності та нагороди</h3>
+    <div class="levels" role="radiogroup" aria-label="Рівень складності">
+      @for (l of levels; track l.id) {
+        <button
+          type="button"
+          role="radio"
+          class="level"
+          [class.active]="levelId() === l.id"
+          [attr.aria-checked]="levelId() === l.id"
+          (click)="levelId.set(l.id)"
+        >
+          {{ l.title }}
+        </button>
+      }
+      <span class="xp-note">+{{ currentXp() }} XP</span>
+    </div>
+
+    <h3 class="sub examples-title">Приклади завдань у категоріях</h3>
+    <p class="hint">(наведи курсор на картку, щоб побачити приклади)</p>
+
+    <div class="categories">
+      @for (cat of categories; track cat.id) {
+        <a class="cat" routerLink="/register" [style.--tint]="cat.tint">
+          <span class="cat-icon" aria-hidden="true">{{ cat.icon }}</span>
+          <span class="cat-title">{{ cat.title }}</span>
+          <span class="cat-examples">
+            <span class="cat-examples-inner">
+              @for (ex of cat.examples[levelId()]; track ex) {
+                <span class="example">{{ ex }}</span>
+              }
+            </span>
+          </span>
+        </a>
+      }
+    </div>
+  </section>
+
+  <section class="progress">
+    <h2 class="title">Твій майбутній прогрес</h2>
+    <div class="progress-grid">
+      <article
+        class="panel panel-xp"
+        tabindex="0"
+        (mouseenter)="fillXp(true)"
+        (mouseleave)="fillXp(false)"
+        (focus)="fillXp(true)"
+        (blur)="fillXp(false)"
+      >
+        <div class="panel-head"><span aria-hidden="true">☆</span> Бали</div>
+        <p class="xp">{{ xp() }} XP</p>
+        <p class="level-line">Рівень {{ playerLevel() }}</p>
+        <p class="bar-count">{{ xp() }} / {{ xpMax }}</p>
+        <div class="bar"><span [style.width.%]="(xp() / xpMax) * 100"></span></div>
+        <div class="bar-labels"><span>Новачок</span><span>Профі</span></div>
+      </article>
+
+      <article class="panel panel-duo">
+        <div class="panel-head"><span aria-hidden="true">👥</span> Грати на двох</div>
+        <div class="invite">
+          <app-ui-button label="Запросити" variant="secondary" link="/register"></app-ui-button>
+        </div>
+        <p class="note">Виконуй спільні місії разом із друзями</p>
+      </article>
+
+      <article
+        class="panel panel-streak"
+        tabindex="0"
+        (mouseenter)="fillStreak(true)"
+        (mouseleave)="fillStreak(false)"
+        (focus)="fillStreak(true)"
+        (blur)="fillStreak(false)"
+      >
+        <div class="panel-head"><span aria-hidden="true">◔</span> Стрік</div>
+        <p class="streak-count">{{ streak() }} <small>{{ daysWord(streak()) }}</small></p>
+        <div class="week">
+          @for (d of week; track d; let i = $index) {
+            <span class="day" [class.done]="i < streak()"><i>✓</i>{{ d }}</span>
+          }
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <section class="final">
+    <h2 class="final-title">Готовий змінити свій день?</h2>
+    <app-ui-button label="Зареєструватися" variant="primary" link="/register"></app-ui-button>
+  </section>
+</main>

@@ -1,0 +1,23 @@
+<main class="auth-page">
+  <section class="auth-card">
+    <a class="brand" routerLink="/" aria-label="">
+      <span class="brand-mark"></span>
+      <span>Plot.<span class="brand-light"></span></span>
+    </a>
+    <p class="eyebrow"></p>
+    <h1>Створи акаунт</h1>
+    <p class="intro"></p>
+    <form>
+      <label for="register-name">Ім'я</label>
+      <input id="register-name" name="name" type="text" autocomplete="name" placeholder="Твоє ім'я" />
+      <label for="register-email">Електронна пошта</label>
+      <input id="register-email" name="email" type="email" autocomplete="email" placeholder="name@example.com" />
+      <label for="register-password">Пароль</label>
+      <input id="register-password" name="password" type="password" autocomplete="new-password" placeholder="Щонайменше 8 символів" />
+      <button type="button" class="submit-button" disabled>Створити акаунт</button>
+      <p class="form-note">Реєстрація стане доступною після підключення сервера.</p>
+    </form>
+    <p class="switch-page">Вже маєш акаунт? <a routerLink="/login">Увійти</a></p>
+    <a class="back-link" routerLink="/">← Повернутися на сторінку ознайомлення</a>
+  </section>
+</main>
