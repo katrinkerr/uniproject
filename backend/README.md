@@ -83,3 +83,69 @@ Angular зазвичай працює на `http://localhost:4200`, а FastAPI �
 
 
 
+## User Registration API
+
+### POST /auth/register
+
+Registers a new user in the PLOT application.
+
+**Request**
+
+- Method: `POST`
+- Endpoint: `/auth/register`
+- Content-Type: `application/json`
+
+Request body:
+
+```json
+{
+  "email": "andrii@example.com",
+  "password": "MyPassword123!"
+}
+```
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `email` | string | Yes | Valid, unique email address |
+| `password` | string | Yes | Password containing 8–128 characters |
+
+**Successful response — 201 Created**
+
+```json
+{
+  "id": 1,
+  "email": "andrii@example.com"
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `id` | integer | Unique user identifier |
+| `email` | string | Registered email address |
+
+**Error responses**
+
+| HTTP Status | Description |
+|---|---|
+| `409 Conflict` | Email is already registered |
+| `422 Unprocessable Content` | Invalid email, password or request data |
+| `500 Internal Server Error` | Unexpected server error |
+
+Example error response — `409 Conflict`:
+
+```json
+{
+  "detail": "Email already registered"
+}
+```
+
+**Validation and security requirements**
+
+- Email must have a valid format.
+- Email addresses must be unique, case-insensitively.
+- Password must contain 8–128 characters.
+- Passwords must be securely hashed before being stored in the database.
+- Passwords and password hashes must never be returned by the API.
+- Successful registration creates an account but does not automatically log the user in.
+
+**Implementation status:** Planned. The endpoint will be implemented in the next task.
