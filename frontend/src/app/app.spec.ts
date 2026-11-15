@@ -24,7 +24,7 @@ describe('App', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Навчання,яке тримає твій ритм.');
+    expect(compiled.querySelector('h1')?.textContent).toContain('PlotGenerator');
   });
 
   it('should navigate to the student dashboard', async () => {
@@ -66,6 +66,6 @@ describe('App', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect((fixture.nativeElement as HTMLElement).querySelector('h1')?.textContent).toContain('Увійди до UniPlan');
+    expect((fixture.nativeElement as HTMLElement).querySelector('h1')?.textContent).toContain('Увійди до PlotGenerator');
   });
 });
