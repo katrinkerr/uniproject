@@ -18,14 +18,14 @@
       @if (form.controls.password.touched && form.controls.password.invalid) {
         <p class="form-note" role="alert">Пароль має містити від 8 до 128 символів.</p>
       }
-      <button type="submit" class="submit-button" [disabled]="form.invalid || submitting">
-        {{ submitting ? 'Створюємо...' : 'Створити акаунт' }}
+      <button type="submit" class="submit-button" [disabled]="form.invalid || submitting()">
+        {{ submitting() ? 'Створюємо...' : 'Створити акаунт' }}
       </button>
-      @if (successMessage) {
-        <p class="form-note" role="status">{{ successMessage }}</p>
+      @if (successMessage(); as message) {
+        <p class="form-note" role="status">{{ message }}</p>
       }
-      @if (errorMessage) {
-        <p class="form-note" role="alert">{{ errorMessage }}</p>
+      @if (errorMessage(); as message) {
+        <p class="form-note" role="alert">{{ message }}</p>
       }
     </form>
     <p class="switch-page">Вже маєш акаунт? <a routerLink="/login">Увійти</a></p>

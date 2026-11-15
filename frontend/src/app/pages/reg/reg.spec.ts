@@ -51,7 +51,16 @@ describe('Reg', () => {
     const request = httpTestingController.expectOne('http://127.0.0.1:8000/auth/register');
     request.error(new ProgressEvent('error'));
 
-    expect(component.submitting).toBe(false);
-    expect(component.errorMessage).toContain('Сервер реєстрації недоступний');
+    expect(component.submitting()).toBe(false);
+    expect(component.errorMessage()).toContain('Сервер реєстрації недоступний');
+    fixture.detectChanges();
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector('[role="alert"]')?.textContent,
+    ).toContain('Сервер реєстрації недоступний');
+    expect(
+      (fixture.nativeElement as HTMLElement).querySelector<HTMLButtonElement>(
+        'button[type="submit"]',
+      )?.disabled,
+    ).toBe(false);
   });
 });
