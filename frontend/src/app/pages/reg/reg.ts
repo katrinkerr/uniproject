@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { RegisterApiService } from '../../services/register-api.service';
@@ -24,36 +24,38 @@ export class Reg {
     }),
   });
 
-  submitting = false;
-  successMessage = '';
-  errorMessage = '';
+  readonly submitting = signal(false);
+  readonly successMessage = signal('');
+  readonly errorMessage = signal('');
 
   submit(): void {
-    if (this.form.invalid || this.submitting) {
+    if (this.form.invalid || this.submitting()) {
       this.form.markAllAsTouched();
       return;
     }
 
-    this.submitting = true;
-    this.successMessage = '';
-    this.errorMessage = '';
+    this.submitting.set(true);
+    this.successMessage.set('');
+    this.errorMessage.set('');
 
     this.registerApi.register(this.form.getRawValue()).subscribe({
       next: (result) => {
-        this.submitting = false;
-        this.successMessage = `Акаунт створено для ${result.email}.`;
+        this.submitting.set(false);
+        this.successMessage.set(`Акаунт створено для ${result.email}.`);
         this.form.reset();
       },
       error: (error: unknown) => {
-        this.submitting = false;
+        this.submitting.set(false);
         const status = error instanceof HttpErrorResponse ? error.status : 0;
-        this.errorMessage = status === 409
-          ? 'Ця електронна пошта вже зареєстрована.'
-          : status === 422
-            ? 'Перевір електронну пошту та пароль.'
-            : status === 0
-              ? 'Сервер реєстрації недоступний. Запусти бекенд і спробуй ще раз.'
-              : 'Не вдалося створити акаунт. Спробуй ще раз.';
+        this.errorMessage.set(
+          status === 409
+            ? 'Ця електронна пошта вже зареєстрована.'
+            : status === 422
+              ? 'Перевір електронну пошту та пароль.'
+              : status === 0
+                ? 'Сервер реєстрації недоступний. Запусти бекенд і спробуй ще раз.'
+                : 'Не вдалося створити акаунт. Спробуй ще раз.',
+        );
       },
     });
   }
