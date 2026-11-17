@@ -1,0 +1,11 @@
+<button
+  class="ui-btn"
+  [class.primary]="variant() === 'primary'"
+  [class.secondary]="variant() === 'secondary'"
+  [class.danger]="variant() === 'danger'"
+  [disabled]="disabled()"
+  [routerLink]="link()"
+  (click)="onClick()"
+>
+  {{ label() }}
+</button>

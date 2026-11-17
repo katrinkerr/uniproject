@@ -99,7 +99,7 @@ Request body:
 
 ```json
 {
-  "email": "andrii@example.com",
+  "email": "paterega@example.com",
   "password": "MyPassword123!"
 }
 ```
@@ -114,7 +114,7 @@ Request body:
 ```json
 {
   "id": 1,
-  "email": "andrii@example.com"
+  "email": "paterega@example.com"
 }
 ```
 
@@ -149,3 +149,7 @@ Example error response — `409 Conflict`:
 - Successful registration creates an account but does not automatically log the user in.
 
 **Implementation status:** Planned. The endpoint will be implemented in the next task.
+
+## API Documentation
+
+See [Authentication and Mission API](docs/api/authentication-and-missions.md).
