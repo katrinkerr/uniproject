@@ -1,24 +1,38 @@
-"""Apply the first SQLite database migration (run: python migrate.py)."""
+"""Apply numbered SQLite migrations (run: python migrate.py)."""
 
 from pathlib import Path
 import sqlite3
 
 ROOT = Path(__file__).resolve().parent
 DB_FILE = ROOT / "plot.db"
-SQL_FILE = ROOT / "migrations" / "001_create_users.sql"
+MIGRATIONS = ROOT / "migrations"
 
 
 def main() -> None:
     with sqlite3.connect(DB_FILE) as db:
-        version = db.execute("PRAGMA user_version").fetchone()[0]
-        if version >= 1:
-            print(f"Database is already at version {version}; no changes needed.")
-            return
+        current_version = db.execute("PRAGMA user_version").fetchone()[0]
+        files = sorted(MIGRATIONS.glob("[0-9][0-9][0-9]_*.sql"))
 
-        sql = SQL_FILE.read_text(encoding="utf-8")
-        # BEGIN/COMMIT make the table creation and version update atomic.
-        db.executescript("BEGIN;\n" + sql + "\nPRAGMA user_version = 1;\nCOMMIT;")
-        print(f"Migration 001 applied. Created {DB_FILE.name} and users table.")
+        for sql_file in files:
+            version = int(sql_file.name.split("_", 1)[0])
+            if version <= current_version:
+                continue
+            if version != current_version + 1:
+                raise RuntimeError("Missing database migration")
+
+            sql = sql_file.read_text(encoding="utf-8")
+            try:
+                db.executescript(
+                    f"BEGIN;\n{sql}\nPRAGMA user_version = {version};\nCOMMIT;"
+                )
+            except Exception:
+                db.rollback()
+                raise
+
+            current_version = version
+            print(f"Migration {version:03d} applied")
+
+        print(f"Database version: {current_version}")
 
 
 if __name__ == "__main__":
