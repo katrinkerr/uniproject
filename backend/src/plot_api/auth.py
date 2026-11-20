@@ -13,7 +13,13 @@ from sqlalchemy.exc import IntegrityError
 
 from plot_api.models import SessionLocal, User, UserSession
 
+from typing import Annotated, Literal
+
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+
 router = APIRouter(prefix="/auth", tags=["Auth"])
+bearer_scheme = HTTPBearer(auto_error=False)
 password_hasher = PasswordHash.recommended()
 DUMMY_PASSWORD_HASH = password_hasher.hash("dummy-password-for-unknown-user")
 
@@ -118,3 +124,48 @@ def login(data: LoginRequest) -> LoginResponse:
         db.commit()
 
     return LoginResponse(access_token=token)
+
+
+def _invalid_session() -> HTTPException:
+    return HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid or expired session token",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+
+def get_current_user(
+    credentials: Annotated[
+        HTTPAuthorizationCredentials | None,
+        Depends(bearer_scheme)
+    ],
+) -> User:
+    if credentials is None:
+        raise _invalid_session()
+
+    token_hash = sha256(
+        credentials.credentials.encode("utf-8")
+    ).hexdigest()
+
+    with SessionLocal() as db:
+        session = db.get(UserSession, token_hash)
+
+        if session is None or session.expires_at <= int(time.time()):
+            raise _invalid_session()
+
+        user = db.get(User, session.user_id)
+
+        if user is None:
+            raise _invalid_session()
+
+        return user
+
+
+@router.get("/me", response_model=RegisterResponse)
+def get_me(
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> RegisterResponse:
+    return RegisterResponse(
+        id=current_user.id,
+        email=current_user.email
+    )
