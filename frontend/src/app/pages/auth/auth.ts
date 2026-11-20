@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   imports: [RouterLink],
@@ -7,4 +7,10 @@ import { RouterLink } from '@angular/router';
   styleUrl: './auth.css',
   templateUrl: './auth.html',
 })
-export class Auth {}
+export class Auth {
+  private readonly router = inject(Router);
+
+  navigateToHome(): void {
+    void this.router.navigate(['/home']);
+  }
+}

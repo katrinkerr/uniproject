@@ -12,8 +12,8 @@
       <input id="login-email" name="email" type="email" autocomplete="email" placeholder="name@example.com" />
       <label for="login-password">Пароль</label>
       <input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Введи пароль" />
-      <button type="button" class="submit-button" disabled>Увійти</button>
-      <p class="form-note">Вхід стане доступним після підключення сервера.</p>
+      <button type="button" class="submit-button" (click)="navigateToHome()">Увійти</button>
+      <p class="form-note">Демо-режим: облікові дані поки не перевіряються.</p>
     </form>
     <p class="switch-page">Ще не маєш акаунта? <a routerLink="/register">Зареєструватися</a></p>
     <a class="back-link" routerLink="/">← Повернутися на сторінку ознайомлення</a>
