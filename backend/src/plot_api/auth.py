@@ -18,6 +18,8 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from fastapi import APIRouter, Depends, HTTPException, Response, status
+
 router = APIRouter(prefix="/auth", tags=["Auth"])
 bearer_scheme = HTTPBearer(auto_error=False)
 password_hasher = PasswordHash.recommended()
@@ -169,3 +171,30 @@ def get_me(
         id=current_user.id,
         email=current_user.email
     )
+
+
+@router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+def logout(
+    credentials: Annotated[
+        HTTPAuthorizationCredentials | None,
+        Depends(bearer_scheme),
+    ],
+    current_user: Annotated[User, Depends(get_current_user)],
+) -> Response:
+    if credentials is None:
+        raise _invalid_session()
+
+    token_hash = sha256(
+        credentials.credentials.encode("utf-8")
+    ).hexdigest()
+
+    with SessionLocal() as db:
+        session = db.get(UserSession, token_hash)
+
+        if session is None or session.user_id != current_user.id:
+            raise _invalid_session()
+
+        db.delete(session)
+        db.commit()
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
