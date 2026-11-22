@@ -1,0 +1,87 @@
+:host {
+  display: block;
+}
+
+.auth-aside {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(32px, 6vw, 88px);
+  color: #fff;
+  background:
+    radial-gradient(circle at 85% 20%, #60a5fa 0, transparent 34%),
+    linear-gradient(145deg, #102a56, #1d4ed8 58%, #3b82f6);
+}
+
+.auth-aside__brand {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.auth-aside__content {
+  max-width: 470px;
+  margin: auto 0;
+}
+
+.auth-aside h2 {
+  margin: 0;
+  font-size: clamp(32px, 4vw, 52px);
+  line-height: 1.08;
+}
+
+.auth-aside p {
+  max-width: 390px;
+  margin: 18px 0 0;
+  color: #e2efff;
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.auth-aside__steps {
+  display: grid;
+  gap: 14px;
+  margin: 34px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.auth-aside__steps li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #d7e8ff;
+}
+
+.auth-aside__steps li span {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #bfdbfe99;
+  border-radius: 50%;
+}
+
+.auth-aside__steps .auth-aside__step--active {
+  color: #fff;
+  font-weight: 700;
+}
+
+.auth-aside__steps .auth-aside__step--active span {
+  border-color: #fff;
+  color: #1747a6;
+  background: #fff;
+}
+
+@media (max-width: 760px) {
+  .auth-aside {
+    min-height: auto;
+    gap: 42px;
+    padding: 28px 24px;
+  }
+
+  .auth-aside__content {
+    margin: 0;
+  }
+}

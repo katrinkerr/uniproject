@@ -6,7 +6,7 @@ import { routes } from './app.routes';
 
 describe('App', () => {
   beforeEach(async () => {
-    sessionStorage.removeItem('plot-demo-authenticated');
+    sessionStorage.removeItem('plot-access-token');
     await TestBed.configureTestingModule({
       imports: [App],
       providers: [provideHttpClient(), provideRouter(routes)],
@@ -30,7 +30,7 @@ describe('App', () => {
   });
 
   it('should navigate to the student dashboard', async () => {
-    sessionStorage.setItem('plot-demo-authenticated', 'true');
+    sessionStorage.setItem('plot-access-token', 'test-token');
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     await TestBed.inject(Router).navigateByUrl('/home');
@@ -53,7 +53,7 @@ describe('App', () => {
   });
 
   it('should redirect authenticated users away from login', async () => {
-    sessionStorage.setItem('plot-demo-authenticated', 'true');
+    sessionStorage.setItem('plot-access-token', 'test-token');
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     const router = TestBed.inject(Router);

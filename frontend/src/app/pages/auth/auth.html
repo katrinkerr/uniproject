@@ -38,10 +38,13 @@
         }
       </div>
 
-      <button class="auth-button" type="submit">Увійти</button>
-      <p class="auth-form__notice" role="note">
-        Демо-режим: email і пароль не перевіряються сервером.
-      </p>
+      @if (errorMessage(); as message) {
+        <p class="auth-form__error" role="alert">{{ message }}</p>
+      }
+
+      <button class="auth-button" type="submit" [disabled]="isLoading()">
+        {{ isLoading() ? 'Вхід...' : 'Увійти' }}
+      </button>
 
       <p class="auth-form__footer">
         Ще немає акаунту? <a routerLink="/register">Зареєструватися</a>
