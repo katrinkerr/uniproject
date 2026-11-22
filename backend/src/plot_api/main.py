@@ -10,6 +10,8 @@ from fastapi import Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
+from plot_api.missions import router as missions_router
+
 def create_app() -> FastAPI:
     settings = get_settings()
 
@@ -49,6 +51,7 @@ def create_app() -> FastAPI:
 
     application.include_router(health_router)
     application.include_router(auth_router)
+    application.include_router(missions_router)
 
     @application.get("/")
     def root():
