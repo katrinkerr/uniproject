@@ -1,0 +1,47 @@
+# PLOT - technical documentation (run from the uniproject root)
+# Generate with: doxygen Doxyfile
+
+PROJECT_NAME           = "PLOT"
+PROJECT_BRIEF          = "Mini-missions application: Angular frontend and FastAPI backend"
+OUTPUT_DIRECTORY       = docs/generated
+OUTPUT_LANGUAGE        = English
+
+# Both parts of the project and existing Markdown documentation.
+INPUT = README.md \
+        backend/README.md \
+        backend/src \
+        backend/tests \
+        docs/api \
+        frontend/src
+
+RECURSIVE              = YES
+FILE_PATTERNS          = *.py *.ts *.md
+# Doxygen has no dedicated TypeScript parser: use JavaScript as a best-effort fallback.
+EXTENSION_MAPPING      = ts=JavaScript
+
+# Do not scan generated/dependency files.
+EXCLUDE_PATTERNS       = */node_modules/* \
+                         */dist/* \
+                         */.angular/* \
+                         */.venv/* \
+                         */__pycache__/* \
+                         */.pytest_cache/* \
+                         */*.egg-info/* \
+                         */generated/*
+
+USE_MDFILE_AS_MAINPAGE = README.md
+MARKDOWN_SUPPORT       = YES
+EXTRACT_ALL            = YES
+SOURCE_BROWSER         = YES
+GENERATE_TREEVIEW      = YES
+FULL_PATH_NAMES        = NO
+
+GENERATE_HTML          = YES
+HTML_OUTPUT            = html
+GENERATE_LATEX         = NO
+GENERATE_XML           = NO
+HAVE_DOT               = NO
+
+QUIET                  = YES
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = NO
