@@ -102,4 +102,13 @@ describe('Auth', () => {
 
     expect(element.querySelector('[role="alert"]')?.textContent).toContain('/auth/login');
   });
+
+  it('should navigate to home when the login button is clicked', () => {
+    const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
+    fixture.detectChanges();
+
+    fixture.nativeElement.querySelector('button').click();
+
+    expect(navigateSpy).toHaveBeenCalledWith(['/home']);
+  });
 });
