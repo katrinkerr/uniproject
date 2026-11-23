@@ -1,34 +1,127 @@
-<main class="auth-page">
-  <section class="auth-card">
-    <a class="brand" routerLink="/" aria-label="">
-      <span class="brand-mark"></span>
-      <span>Plot.<span class="brand-light"></span></span>
-    </a>
-    <p class="eyebrow"></p>
-    <h1>Створи акаунт</h1>
-    <p class="intro"></p>
-    <form [formGroup]="form" (ngSubmit)="submit()">
-      <label for="register-email">Електронна пошта</label>
-      <input id="register-email" name="email" type="email" formControlName="email" autocomplete="email" placeholder="name@example.com" />
-      @if (form.controls.email.touched && form.controls.email.invalid) {
-        <p class="form-note" role="alert">Введи коректну електронну пошту.</p>
-      }
-      <label for="register-password">Пароль</label>
-      <input id="register-password" name="password" type="password" formControlName="password" autocomplete="new-password" placeholder="Щонайменше 8 символів" />
-      @if (form.controls.password.touched && form.controls.password.invalid) {
-        <p class="form-note" role="alert">Пароль має містити від 8 до 128 символів.</p>
-      }
-      <button type="submit" class="submit-button" [disabled]="form.invalid || submitting()">
-        {{ submitting() ? 'Створюємо...' : 'Створити акаунт' }}
-      </button>
-      @if (successMessage(); as message) {
-        <p class="form-note" role="status">{{ message }}</p>
-      }
-      @if (errorMessage(); as message) {
-        <p class="form-note" role="alert">{{ message }}</p>
+<div class="auth-page">
+  <app-auth-aside
+    heading="Твій день. Твої правила. Твої перемоги."
+    [steps]="asideSteps"
+    [activeStep]="step() === 'account' ? 0 : 1"
+  />
+
+  <main class="auth-panel">
+    <form class="auth-form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      @if (step() === 'account') {
+        <h1 class="auth-form__title">Створити акаунт</h1>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input
+            id="email"
+            type="email"
+            formControlName="email"
+            placeholder="example@mail.com"
+            autocomplete="email"
+            [class.field__input--invalid]="isInvalid(form.controls.email)"
+          />
+          @if (isInvalid(form.controls.email)) {
+            <small class="field__error">Введи коректний email</small>
+          }
+        </div>
+
+        <div class="field">
+          <label for="password">Пароль</label>
+          <input
+            id="password"
+            type="password"
+            formControlName="password"
+            placeholder="••••••••"
+            autocomplete="new-password"
+            [class.field__input--invalid]="isInvalid(form.controls.password)"
+          />
+          @if (isInvalid(form.controls.password)) {
+            <small class="field__error">Пароль має містити щонайменше 8 символів</small>
+          }
+        </div>
+
+        @if (errorMessage(); as message) {
+          <p class="auth-form__error" role="alert">{{ message }}</p>
+        }
+
+        <button class="auth-button" type="button" (click)="goToCharacterStep()">Далі</button>
+
+        <p class="auth-form__footer">
+          Продовжуючи, ви погоджуєтесь з Умовами використання та Політикою конфіденційності
+        </p>
+        <p class="auth-form__footer">Вже маєте акаунт? <a routerLink="/login">Увійти</a></p>
+      } @else {
+        <h1 class="auth-form__title">Створи свого персонажа</h1>
+        <p class="auth-form__subtitle">Вибери аватарку</p>
+
+        <div class="avatar-preview">
+          @if (form.controls.avatarId.value; as selectedId) {
+            <app-avatar-icon [avatarId]="selectedId" />
+          } @else {
+            <svg viewBox="0 0 64 64" aria-hidden="true">
+              <circle cx="32" cy="25" r="10" fill="#d0d5dd" />
+              <path d="M12 58 Q12 40 32 40 Q52 40 52 58 Z" fill="#d0d5dd" />
+            </svg>
+          }
+        </div>
+
+        <div class="avatar-picker" role="radiogroup" aria-label="Аватарка">
+          @for (avatar of avatars; track avatar.id) {
+            <button
+              class="avatar-picker__item"
+              type="button"
+              role="radio"
+              [attr.aria-checked]="form.controls.avatarId.value === avatar.id"
+              [attr.aria-label]="avatar.label"
+              [title]="avatar.label"
+              [class.avatar-picker__item--selected]="form.controls.avatarId.value === avatar.id"
+              (click)="selectAvatar(avatar.id)"
+            >
+              <app-avatar-icon [avatarId]="avatar.id" />
+            </button>
+          }
+        </div>
+        @if (isInvalid(form.controls.avatarId)) {
+          <small class="field__error avatar-picker__error">Обери аватарку</small>
+        }
+
+        <div class="field">
+          <label for="name">Ім'я</label>
+          <input
+            id="name"
+            type="text"
+            formControlName="name"
+            placeholder="Як тебе називати?"
+            autocomplete="given-name"
+            [class.field__input--invalid]="isInvalid(form.controls.name)"
+          />
+          @if (isInvalid(form.controls.name)) {
+            <small class="field__error">Вкажи ім'я (до 30 символів)</small>
+          }
+        </div>
+
+        <div class="field">
+          <label for="nickname">Нікнейм</label>
+          <input
+            id="nickname"
+            type="text"
+            formControlName="nickname"
+            placeholder="Як тебе шукатимуть друзі?"
+            autocomplete="username"
+            [class.field__input--invalid]="isInvalid(form.controls.nickname)"
+          />
+          @if (isInvalid(form.controls.nickname)) {
+            <small class="field__error">3–20 символів: латиниця, цифри або _</small>
+          }
+        </div>
+
+        @if (errorMessage(); as message) {
+          <p class="auth-form__error" role="alert">{{ message }}</p>
+        }
+
+        <button class="auth-button" type="submit" [disabled]="isLoading()">Зареєструватися</button>
+        <button class="back-button" type="button" (click)="goToAccountStep()">Назад</button>
       }
     </form>
-    <p class="switch-page">Вже маєш акаунт? <a routerLink="/login">Увійти</a></p>
-    <a class="back-link" routerLink="/">← Повернутися на сторінку ознайомлення</a>
-  </section>
-</main>
+  </main>
+</div>
