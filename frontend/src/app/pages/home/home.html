@@ -4,6 +4,9 @@
     <div class="topbar__actions">
       <button class="icon-btn" aria-label="Сповіщення">🔔</button>
       <button class="icon-btn" aria-label="Налаштування">⚙️</button>
+      <button class="logout-btn" type="button" [disabled]="loggingOut()" (click)="logout()">
+        {{ loggingOut() ? 'Вихід...' : 'Вийти' }}
+      </button>
     </div>
   </header>
 

@@ -1,6 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import { AuthApiService } from '../../services/auth-api.service';
 import {
   Mission,
   MissionApiService,
@@ -20,6 +22,8 @@ interface Category { id: MissionCategory; label: string; icon: string; }
 })
 export class Home {
   private readonly missionApi = inject(MissionApiService);
+  private readonly authApi = inject(AuthApiService);
+  private readonly router = inject(Router);
 
   // ---- стан сторінки: головна / рандом / генерація ----
   readonly view = signal<View>('home');
@@ -53,6 +57,7 @@ export class Home {
   readonly category = signal<MissionCategory | null>(null);
   readonly generated = signal<Mission | null>(null);
   readonly loading = signal(false);
+  readonly loggingOut = signal(false);
   readonly requestError = signal('');
 
   // ---- мої місії / друзі ----
@@ -83,7 +88,7 @@ export class Home {
 
   readonly canGenerate = computed(() => this.category() !== null);
 
-  categoryOf(id: string): Category {
+  categoryOf(id: MissionCategory): Category {
     return this.categories.find(c => c.id === id) ?? this.categories[0];
   }
 
@@ -151,6 +156,22 @@ export class Home {
   acceptGenerated(): void {
     const m = this.generated();
     if (m) this.accept(m);
+  }
+
+  logout(): void {
+    if (this.loggingOut()) return;
+
+    this.loggingOut.set(true);
+    this.authApi.logout().subscribe({
+      next: () => this.finishLogout(),
+      error: () => this.finishLogout(),
+    });
+  }
+
+  private finishLogout(): void {
+    this.authApi.clearSession();
+    this.loggingOut.set(false);
+    void this.router.navigate(['/login']);
   }
 
   private accept(m: Mission): void {

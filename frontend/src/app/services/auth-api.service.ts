@@ -22,4 +22,35 @@ export class AuthApiService {
       .post<LoginResponse>(`${this.baseUrl}/auth/login`, data)
       .pipe(timeout({ first: 15000 }));
   }
+
+  logout(): Observable<void> {
+    const accessToken = this.getAccessToken();
+    const headers = accessToken
+      ? { Authorization: `Bearer ${accessToken}` }
+      : undefined;
+
+    return this.http
+      .post<void>(`${this.baseUrl}/auth/logout`, null, { headers })
+      .pipe(timeout({ first: 15000 }));
+  }
+
+  getAccessToken(): string | null {
+    try {
+      return (
+        localStorage.getItem('access_token') ??
+        localStorage.getItem('accessToken')
+      );
+    } catch {
+      return null;
+    }
+  }
+
+  clearSession(): void {
+    try {
+      localStorage.removeItem('access_token');
+      localStorage.removeItem('accessToken');
+    } catch {
+      // The route is protected again once there is no readable session.
+    }
+  }
 }
