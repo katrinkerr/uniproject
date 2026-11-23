@@ -31,6 +31,12 @@
         @case ('random') {
           <button class="back" (click)="back()" aria-label="Назад">←</button>
           <div class="random">
+            @if (loading()) {
+              <p class="muted">Отримуємо варіанти місій...</p>
+            }
+            @if (requestError()) {
+              <p class="request-error">{{ requestError() }}</p>
+            }
             <div class="random__cards">
               @for (m of randomOptions(); track m.id) {
                 <button class="mission-pick" [class.mission-pick--selected]="selectedRandomId() === m.id"
@@ -40,7 +46,7 @@
                     <span class="tag tag--xp">+{{ m.xp }} XP</span>
                     <span class="mission-pick__icon">{{ categoryOf(m.category).icon }}</span>
                   </span>
-                  <span class="mission-pick__text">{{ m.text }}</span>
+                  <span class="mission-pick__text">{{ m.description }}</span>
                 </button>
               }
             </div>
@@ -77,6 +83,12 @@
               <button class="btn btn--violet" [disabled]="!canGenerate()" (click)="generate()">
                 ✦ Згенерувати місію
               </button>
+              @if (loading()) {
+                <p class="muted">Отримуємо місію...</p>
+              }
+              @if (requestError()) {
+                <p class="request-error">{{ requestError() }}</p>
+              }
             </div>
 
             <div class="result glass-inner">
@@ -86,7 +98,7 @@
                   <span class="tag tag--xp">+{{ g.xp }} XP</span>
                   <span class="mission-pick__icon">{{ categoryOf(g.category).icon }}</span>
                 </div>
-                <p>{{ g.text }}</p>
+                <p>{{ g.description }}</p>
                 <button class="btn btn--cyan btn--sm" (click)="acceptGenerated()">Прийняти виклик</button>
               } @else {
                 <p class="muted">Обери складність і категорію, щоб отримати місію.</p>
@@ -117,7 +129,7 @@
             <article class="my-mission">
               <header>{{ categoryOf(m.category).icon }} <b>{{ categoryOf(m.category).label }}</b>
                 <span class="tag tag--xp">+{{ m.xp }} XP</span></header>
-              <p>{{ m.text }}</p>
+              <p>{{ m.description }}</p>
             </article>
           }
         </div>

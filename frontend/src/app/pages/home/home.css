@@ -38,6 +38,7 @@
   border-radius: 16px;
 }
 .muted { color: var(--muted); font-size: .85rem; }
+.request-error { color: #ff9d9d; font-size: .82rem; margin: 0; }
 
 /* ---------- top / sidebar ---------- */
 .topbar { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; }
