@@ -1,17 +1,15 @@
-import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { forkJoin } from 'rxjs';
+import {
+  Mission,
+  MissionApiService,
+  MissionCategory,
+  MissionDifficulty,
+} from '../../services/mission-api.service';
 
 type View = 'home' | 'random' | 'generate';
-type Difficulty = 'easy' | 'medium' | 'hard';
-
-interface Mission {
-  id: number;
-  category: string;
-  difficulty: Difficulty;
-  xp: number;
-  text: string;
-}
-
-interface Category { id: string; label: string; icon: string; }
+interface Category { id: MissionCategory; label: string; icon: string; }
 
 @Component({
   selector: 'app-home',
@@ -21,39 +19,24 @@ interface Category { id: string; label: string; icon: string; }
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Home {
+  private readonly missionApi = inject(MissionApiService);
+
   // ---- стан сторінки: головна / рандом / генерація ----
   readonly view = signal<View>('home');
 
   readonly categories: Category[] = [
     { id: 'sport', label: 'Спорт', icon: '🚴' },
-    { id: 'creative', label: 'Творчість', icon: '🎨' },
-    { id: 'study', label: 'Навчання', icon: '📖' },
-    { id: 'home', label: 'Дім', icon: '🏠' },
-    { id: 'mind', label: 'Ментальне здоров’я', icon: '💜' },
-    { id: 'social', label: 'Спілкування', icon: '💬' },
+    { id: 'creativity', label: 'Творчість', icon: '🎨' },
+    { id: 'education', label: 'Навчання', icon: '📖' },
+    { id: 'household', label: 'Дім', icon: '🏠' },
+    { id: 'mental_health', label: 'Ментальне здоров’я', icon: '💜' },
+    { id: 'good_deeds', label: 'Добрі справи', icon: '💬' },
   ];
 
-  readonly difficulties: { id: Difficulty; label: string }[] = [
+  readonly difficulties: { id: MissionDifficulty; label: string }[] = [
     { id: 'easy', label: 'Легка' },
     { id: 'medium', label: 'Середня' },
     { id: 'hard', label: 'Складна' },
-  ];
-
-  private readonly pool: Mission[] = [
-    { id: 1, category: 'sport', difficulty: 'easy', xp: 50, text: 'Зробіть 10-хвилинну розминку просто зараз.' },
-    { id: 2, category: 'sport', difficulty: 'medium', xp: 100, text: 'Пройдіть 6 000 кроків за сьогодні.' },
-    { id: 3, category: 'sport', difficulty: 'hard', xp: 150, text: 'Пробіжіть 5 км без зупинок.' },
-    { id: 4, category: 'mind', difficulty: 'easy', xp: 50, text: 'Запишіть три речі, за які вдячні сьогодні.' },
-    { id: 5, category: 'mind', difficulty: 'medium', xp: 100, text: 'Проведіть годину без соцмереж.' },
-    { id: 6, category: 'mind', difficulty: 'hard', xp: 150, text: 'Цілий день без телефону після 18:00.' },
-    { id: 7, category: 'creative', difficulty: 'easy', xp: 50, text: 'Намалюйте швидкий скетч за 5 хвилин.' },
-    { id: 8, category: 'creative', difficulty: 'medium', xp: 100, text: 'Напишіть коротке оповідання на 200 слів.' },
-    { id: 9, category: 'study', difficulty: 'easy', xp: 50, text: 'Прочитайте 10 сторінок книжки.' },
-    { id: 10, category: 'study', difficulty: 'hard', xp: 150, text: 'Вивчіть 20 нових слів іноземною мовою.' },
-    { id: 11, category: 'home', difficulty: 'easy', xp: 50, text: 'Наведіть лад на робочому столі.' },
-    { id: 12, category: 'home', difficulty: 'medium', xp: 100, text: 'Приготуйте новий рецепт, якого ще не пробували.' },
-    { id: 13, category: 'social', difficulty: 'easy', xp: 50, text: 'Напишіть другу, з яким давно не спілкувались.' },
-    { id: 14, category: 'social', difficulty: 'hard', xp: 150, text: 'Організуйте зустріч з друзями цього тижня.' },
   ];
 
   // ---- статистика ----
@@ -66,14 +49,30 @@ export class Home {
   readonly selectedRandomId = signal<number | null>(null);
 
   // ---- генерація ----
-  readonly difficulty = signal<Difficulty>('easy');
-  readonly category = signal<string | null>(null);
+  readonly difficulty = signal<MissionDifficulty>('easy');
+  readonly category = signal<MissionCategory | null>(null);
   readonly generated = signal<Mission | null>(null);
+  readonly loading = signal(false);
+  readonly requestError = signal('');
 
   // ---- мої місії / друзі ----
   readonly myMissions = signal<Mission[]>([
-    { id: 100, category: 'sport', difficulty: 'easy', xp: 150, text: 'Ідь на велику хвилю' },
-    { id: 101, category: 'mind', difficulty: 'medium', xp: 150, text: 'Саморозвиватись.' },
+    {
+      id: 100,
+      title: 'Спортивна місія',
+      description: 'Ідь на велику хвилю',
+      category: 'sport',
+      difficulty: 'easy',
+      xp: 150,
+    },
+    {
+      id: 101,
+      title: 'Місія для себе',
+      description: 'Саморозвиватись.',
+      category: 'mental_health',
+      difficulty: 'medium',
+      xp: 150,
+    },
   ]);
 
   readonly friends = [
@@ -88,15 +87,27 @@ export class Home {
     return this.categories.find(c => c.id === id) ?? this.categories[0];
   }
 
-  difficultyLabel(d: Difficulty): string {
+  difficultyLabel(d: MissionDifficulty): string {
     return this.difficulties.find(x => x.id === d)!.label;
   }
 
   // ---- навігація між станами ----
   openRandom(): void {
     this.selectedRandomId.set(null);
-    this.randomOptions.set(this.pickRandom(3));
     this.view.set('random');
+    this.loading.set(true);
+    this.requestError.set('');
+    forkJoin([
+      this.missionApi.getRandomMission(),
+      this.missionApi.getRandomMission(),
+      this.missionApi.getRandomMission(),
+    ]).subscribe({
+      next: (missions) => {
+        this.randomOptions.set(missions);
+        this.loading.set(false);
+      },
+      error: (error: unknown) => this.handleMissionError(error),
+    });
   }
 
   openGenerate(): void {
@@ -121,9 +132,20 @@ export class Home {
   generate(): void {
     const cat = this.category();
     if (!cat) return;
-    const matches = this.pool.filter(m => m.category === cat && m.difficulty === this.difficulty());
-    const list = matches.length ? matches : this.pool.filter(m => m.category === cat);
-    this.generated.set(list[Math.floor(Math.random() * list.length)]);
+    this.loading.set(true);
+    this.requestError.set('');
+    this.missionApi
+      .getRandomMission({
+        category: cat,
+        difficulty: this.difficulty(),
+      })
+      .subscribe({
+        next: (mission) => {
+          this.generated.set(mission);
+          this.loading.set(false);
+        },
+        error: (error: unknown) => this.handleMissionError(error),
+      });
   }
 
   acceptGenerated(): void {
@@ -136,7 +158,17 @@ export class Home {
     this.view.set('home');
   }
 
-  private pickRandom(n: number): Mission[] {
-    return [...this.pool].sort(() => Math.random() - 0.5).slice(0, n);
+  private handleMissionError(error: unknown): void {
+    this.loading.set(false);
+    const status = error instanceof HttpErrorResponse ? error.status : 0;
+    this.requestError.set(
+      status === 401
+        ? 'Потрібно увійти до акаунта, щоб отримувати місії.'
+        : status === 404
+          ? 'Для вибраних параметрів немає місії.'
+          : status === 0
+            ? 'Сервер недоступний. Перевір, чи запущено бекенд.'
+            : 'Не вдалося отримати місію. Спробуй ще раз.',
+    );
   }
 }

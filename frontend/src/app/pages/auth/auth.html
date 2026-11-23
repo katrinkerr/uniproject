@@ -7,13 +7,15 @@
     <p class="eyebrow">РАДІ ЗНОВУ БАЧИТИ</p>
     <h1>Увійди до PlotGenerator</h1>
     <p class="intro">Продовжуй планувати навчання в одному зручному місці.</p>
-    <form>
+    <form [formGroup]="form" (ngSubmit)="navigateToHome()">
       <label for="login-email">Електронна пошта</label>
-      <input id="login-email" name="email" type="email" autocomplete="email" placeholder="name@example.com" />
+      <input id="login-email" formControlName="email" type="email" autocomplete="email" placeholder="name@example.com" />
       <label for="login-password">Пароль</label>
-      <input id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Введи пароль" />
-      <button type="button" class="submit-button" (click)="navigateToHome()">Увійти</button>
-      <p class="form-note">Демо-режим: облікові дані поки не перевіряються.</p>
+      <input id="login-password" formControlName="password" type="password" autocomplete="current-password" placeholder="Введи пароль" />
+      <button type="submit" class="submit-button" [disabled]="submitting()">Увійти</button>
+      @if (errorMessage()) {
+        <p class="form-note">{{ errorMessage() }}</p>
+      }
     </form>
     <p class="switch-page">Ще не маєш акаунта? <a routerLink="/register">Зареєструватися</a></p>
     <a class="back-link" routerLink="/">← Повернутися на сторінку ознайомлення</a>
