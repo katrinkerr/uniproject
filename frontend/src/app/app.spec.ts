@@ -1,3 +1,4 @@
+import { provideHttpClient } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { App } from './app';
@@ -5,9 +6,10 @@ import { routes } from './app.routes';
 
 describe('App', () => {
   beforeEach(async () => {
+    sessionStorage.removeItem('plot-access-token');
     await TestBed.configureTestingModule({
       imports: [App],
-      providers: [provideRouter(routes)],
+      providers: [provideHttpClient(), provideRouter(routes)],
     }).compileComponents();
   });
 
@@ -28,6 +30,7 @@ describe('App', () => {
   });
 
   it('should navigate to the student dashboard', async () => {
+    sessionStorage.setItem('plot-access-token', 'test-token');
     const fixture = TestBed.createComponent(App);
     fixture.detectChanges();
     await TestBed.inject(Router).navigateByUrl('/home');
@@ -36,6 +39,29 @@ describe('App', () => {
 
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('h1')?.textContent).toContain('Привіт, студенте');
+  });
+
+  it('should redirect guests from the dashboard to login', async () => {
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    const router = TestBed.inject(Router);
+
+    await router.navigateByUrl('/home');
+    await fixture.whenStable();
+
+    expect(router.url).toBe('/login');
+  });
+
+  it('should redirect authenticated users away from login', async () => {
+    sessionStorage.setItem('plot-access-token', 'test-token');
+    const fixture = TestBed.createComponent(App);
+    fixture.detectChanges();
+    const router = TestBed.inject(Router);
+
+    await router.navigateByUrl('/login');
+    await fixture.whenStable();
+
+    expect(router.url).toBe('/home');
   });
 
   it('should navigate to registration from the onboarding button', async () => {
@@ -55,7 +81,7 @@ describe('App', () => {
 
     expect(router.url).toBe('/register');
     expect((fixture.nativeElement as HTMLElement).querySelector('h1')?.textContent).toContain(
-      'Створи акаунт',
+      'Створити акаунт',
     );
   });
 
@@ -66,6 +92,8 @@ describe('App', () => {
     fixture.detectChanges();
     await fixture.whenStable();
 
-    expect((fixture.nativeElement as HTMLElement).querySelector('h1')?.textContent).toContain('Увійди до PlotGenerator');
+    expect((fixture.nativeElement as HTMLElement).querySelector('h1')?.textContent).toContain(
+      'Увійти в акаунт',
+    );
   });
 });

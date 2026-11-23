@@ -1,0 +1,19 @@
+<aside class="auth-aside">
+  <span class="auth-aside__brand">PLOT.</span>
+  <div class="auth-aside__content">
+    <h2>{{ heading }}</h2>
+    @if (text) {
+      <p>{{ text }}</p>
+    }
+    @if (steps.length) {
+      <ol class="auth-aside__steps">
+        @for (step of steps; track step; let index = $index) {
+          <li [class.auth-aside__step--active]="index === activeStep">
+            <span>{{ index + 1 }}</span>
+            {{ step }}
+          </li>
+        }
+      </ol>
+    }
+  </div>
+</aside>
