@@ -105,10 +105,6 @@ describe('Auth', () => {
 
   it('should navigate to home when the login button is clicked', () => {
     const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
-    component.form.setValue({
-      email: 'student@example.com',
-      password: 'StrongPassword123!',
-    });
     fixture.detectChanges();
 
     fixture.nativeElement.querySelector('button').click();
