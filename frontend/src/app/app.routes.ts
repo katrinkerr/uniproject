@@ -20,13 +20,13 @@ export const routes: Routes = [
   },
   {
     path: 'register',
-    loadComponent: () =>
-      import('./pages/reg/reg').then((module) => module.Reg),
+    canActivate: [guestGuard],
+    loadComponent: () => import('./pages/reg/reg').then((module) => module.RegisterComponent),
   },
   {
     path: 'login',
-    loadComponent: () =>
-      import('./pages/auth/auth').then((module) => module.Auth),
+    canActivate: [guestGuard],
+    loadComponent: () => import('./pages/auth/auth').then((module) => module.Auth),
   },
   {
     path: '**',

@@ -1,61 +1,107 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { RegisterApiService } from '../../services/register-api.service';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { NonNullableFormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+
+import { isControlInvalid } from '../auth-form.utils';
+import { AuthAsideComponent } from '../auth-aside/auth-aside.component';
+import { AvatarIconComponent } from '../avatar-icon/avatar-icon.component';
+import { AuthService } from '../../services/auth.service';
+import { AvatarId, RegisterRequest } from '../auth.models';
+import { AVATARS } from '../avatar.constants';
+
+type RegisterStep = 'account' | 'character';
+
+const NICKNAME_PATTERN = /^[a-zA-Z0-9_]{3,20}$/;
 
 @Component({
-  imports: [ReactiveFormsModule, RouterLink],
-  selector: 'app-reg',
-  styleUrl: './reg.css',
+  selector: 'app-register',
+  standalone: true,
+  imports: [ReactiveFormsModule, RouterLink, AuthAsideComponent, AvatarIconComponent],
   templateUrl: './reg.html',
+  styleUrls: ['../auth/auth.css', './reg.css'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class Reg {
-  private readonly registerApi = inject(RegisterApiService);
+export class RegisterComponent {
+  private readonly formBuilder = inject(NonNullableFormBuilder);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
-  readonly form = new FormGroup({
-    email: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required, Validators.email],
-    }),
-    password: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required, Validators.minLength(8), Validators.maxLength(128)],
-    }),
+  protected readonly isInvalid = isControlInvalid;
+  protected readonly avatars = AVATARS;
+  protected readonly asideSteps = ['Зареєструйся', 'Створи персонажа'];
+
+  protected readonly step = signal<RegisterStep>('account');
+  protected readonly isLoading = signal(false);
+  protected readonly errorMessage = signal<string | null>(null);
+
+  protected readonly form = this.formBuilder.group({
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(128)]],
+    name: ['', [Validators.required, Validators.maxLength(30)]],
+    nickname: ['', [Validators.required, Validators.pattern(NICKNAME_PATTERN)]],
+    avatarId: this.formBuilder.control<AvatarId | null>(null, Validators.required),
   });
 
-  readonly submitting = signal(false);
-  readonly successMessage = signal('');
-  readonly errorMessage = signal('');
+  protected goToCharacterStep(): void {
+    const { email, password } = this.form.controls;
+    email.markAsTouched();
+    password.markAsTouched();
 
-  submit(): void {
-    if (this.form.invalid || this.submitting()) {
+    if (email.invalid || password.invalid) {
+      return;
+    }
+
+    this.errorMessage.set(null);
+    this.step.set('character');
+  }
+
+  protected goToAccountStep(): void {
+    this.step.set('account');
+  }
+
+  protected selectAvatar(id: AvatarId): void {
+    this.form.controls.avatarId.setValue(id);
+    this.form.controls.avatarId.markAsTouched();
+  }
+
+  protected submit(): void {
+    if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
-    this.submitting.set(true);
-    this.successMessage.set('');
-    this.errorMessage.set('');
+    const { avatarId, ...profile } = this.form.getRawValue();
+    if (avatarId === null) {
+      return;
+    }
 
-    this.registerApi.register(this.form.getRawValue()).subscribe({
-      next: (result) => {
-        this.submitting.set(false);
-        this.successMessage.set(`Акаунт створено для ${result.email}.`);
-        this.form.reset();
+    const request: RegisterRequest = { ...profile, avatarId };
+
+    this.isLoading.set(true);
+    this.errorMessage.set(null);
+
+    this.authService.register(request).subscribe({
+      next: () => {
+        this.isLoading.set(false);
+        void this.router.navigate(['/login']);
       },
       error: (error: unknown) => {
-        this.submitting.set(false);
         const status = error instanceof HttpErrorResponse ? error.status : 0;
+        const isEmailTaken = status === 409;
+        if (isEmailTaken) {
+          this.step.set('account');
+        }
         this.errorMessage.set(
           status === 409
-            ? 'Ця електронна пошта вже зареєстрована.'
+            ? 'Акаунт з таким email вже існує.'
             : status === 422
-              ? 'Перевір електронну пошту та пароль.'
+              ? 'Перевір email та пароль.'
               : status === 0
                 ? 'Сервер реєстрації недоступний. Запусти бекенд і спробуй ще раз.'
-                : 'Не вдалося створити акаунт. Спробуй ще раз.',
+                : 'Не вдалося зареєструватися. Спробуй ще раз.',
         );
+        this.isLoading.set(false);
       },
     });
   }

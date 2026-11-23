@@ -9,8 +9,12 @@ import { AuthApiService } from '../../services/auth-api.service';
   selector: 'app-auth',
   styleUrl: './auth.css',
   templateUrl: './auth.html',
+  styleUrl: './auth.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Auth {
+  private readonly formBuilder = inject(NonNullableFormBuilder);
+  private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly authApi = inject(AuthApiService);
 
