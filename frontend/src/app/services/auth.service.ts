@@ -1,9 +1,10 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 
 import { RegisterApiService, RegisterResponse } from './register-api.service';
 import { LoginApiService } from './login-api.service';
 import { LoginRequest, LoginResponse, RegisterRequest } from '../pages/auth.models';
+import { AuthApiService } from './auth-api.service';
 
 const ACCESS_TOKEN_KEY = 'plot-access-token';
 
@@ -11,10 +12,19 @@ const ACCESS_TOKEN_KEY = 'plot-access-token';
 export class AuthService {
   private readonly registerApi = inject(RegisterApiService);
   private readonly loginApi = inject(LoginApiService);
+  private readonly authApi = inject(AuthApiService);
   private readonly authenticated = signal(this.hasStoredSession());
 
   isAuthenticated(): boolean {
     return this.authenticated();
+  }
+
+  accessToken(): string | null {
+    if (typeof sessionStorage === 'undefined') {
+      return null;
+    }
+
+    return sessionStorage.getItem(ACCESS_TOKEN_KEY);
   }
 
   startSession(accessToken: string): void {
@@ -31,6 +41,16 @@ export class AuthService {
     }
 
     this.authenticated.set(false);
+  }
+
+  logout(): Observable<void> {
+    const accessToken = this.accessToken();
+    if (!accessToken) {
+      this.endSession();
+      return of(void 0);
+    }
+
+    return this.authApi.logout(accessToken);
   }
 
   register(data: RegisterRequest): Observable<RegisterResponse> {

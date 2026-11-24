@@ -2,8 +2,14 @@
   <header class="topbar">
     <span class="logo">PLOT.</span>
     <div class="topbar__actions">
+      @if (logoutError()) {
+        <span class="logout-error" role="alert">{{ logoutError() }}</span>
+      }
       <button class="icon-btn" aria-label="Сповіщення">🔔</button>
       <button class="icon-btn" aria-label="Налаштування">⚙️</button>
+      <button class="logout-btn" [disabled]="loggingOut()" (click)="logout()">
+        {{ loggingOut() ? 'Вихід...' : 'Вийти' }}
+      </button>
     </div>
   </header>
 
