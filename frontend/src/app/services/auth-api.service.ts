@@ -22,4 +22,12 @@ export class AuthApiService {
       .post<LoginResponse>(`${this.baseUrl}/auth/login`, data)
       .pipe(timeout({ first: 15000 }));
   }
+
+  logout(accessToken: string): Observable<void> {
+    return this.http
+      .post<void>(`${this.baseUrl}/auth/logout`, null, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+      .pipe(timeout({ first: 15000 }));
+  }
 }

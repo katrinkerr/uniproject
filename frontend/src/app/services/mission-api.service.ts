@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, timeout } from 'rxjs';
+import { AuthService } from './auth.service';
 
 export type MissionCategory =
   | 'sport'
@@ -29,6 +30,7 @@ export interface RandomMissionFilters {
 @Injectable({ providedIn: 'root' })
 export class MissionApiService {
   private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
   private readonly baseUrl = 'http://127.0.0.1:8000';
 
   getRandomMission(filters: RandomMissionFilters = {}): Observable<Mission> {
@@ -41,7 +43,7 @@ export class MissionApiService {
       params = params.set('difficulty', filters.difficulty);
     }
 
-    const accessToken = this.getAccessToken();
+    const accessToken = this.authService.accessToken();
     const headers = accessToken
       ? { Authorization: `Bearer ${accessToken}` }
       : undefined;
@@ -49,16 +51,5 @@ export class MissionApiService {
     return this.http
       .get<Mission>(`${this.baseUrl}/missions/random`, { params, headers })
       .pipe(timeout({ first: 15000 }));
-  }
-
-  private getAccessToken(): string | null {
-    try {
-      return (
-        localStorage.getItem('access_token') ??
-        localStorage.getItem('accessToken')
-      );
-    } catch {
-      return null;
-    }
   }
 }

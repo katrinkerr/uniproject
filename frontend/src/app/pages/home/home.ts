@@ -1,6 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { forkJoin } from 'rxjs';
+import { AuthService } from '../../services/auth.service';
 import {
   Mission,
   MissionApiService,
@@ -20,6 +22,8 @@ interface Category { id: MissionCategory; label: string; icon: string; }
 })
 export class Home {
   private readonly missionApi = inject(MissionApiService);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
   // ---- стан сторінки: головна / рандом / генерація ----
   readonly view = signal<View>('home');
@@ -54,6 +58,8 @@ export class Home {
   readonly generated = signal<Mission | null>(null);
   readonly loading = signal(false);
   readonly requestError = signal('');
+  readonly logoutError = signal('');
+  readonly loggingOut = signal(false);
 
   // ---- мої місії / друзі ----
   readonly myMissions = signal<Mission[]>([
@@ -119,6 +125,23 @@ export class Home {
     this.view.set('home');
   }
 
+  logout(): void {
+    this.loggingOut.set(true);
+    this.logoutError.set('');
+    this.authService.logout().subscribe({
+      next: () => this.finishLogout(),
+      error: (error: unknown) => {
+        this.loggingOut.set(false);
+        if (error instanceof HttpErrorResponse && error.status === 401) {
+          this.finishLogout();
+          return;
+        }
+
+        this.logoutError.set('Не вдалося вийти. Перевір з’єднання та спробуй ще раз.');
+      },
+    });
+  }
+
   // ---- дії ----
   selectRandom(m: Mission): void {
     this.selectedRandomId.set(m.id);
@@ -156,6 +179,11 @@ export class Home {
   private accept(m: Mission): void {
     this.myMissions.update(list => [m, ...list.filter(x => x.id !== m.id)].slice(0, 2));
     this.view.set('home');
+  }
+
+  private finishLogout(): void {
+    this.authService.endSession();
+    void this.router.navigate(['/login']);
   }
 
   private handleMissionError(error: unknown): void {
