@@ -20,6 +20,7 @@ This contract extends the existing `POST /auth/register`, `POST /auth/login`, `G
 ### Profile
 
 ```json
+
 {
   "id": 1,
   "email": "andrii@example.com",
@@ -34,8 +35,26 @@ This contract extends the existing `POST /auth/register`, `POST /auth/login`, `G
     "completed_missions": 3,
     "active_missions": 1,
     "streak_days": 2
-  }
+  },
+  "recent_completed_missions": [
+    {
+      "id": 101,
+      "mission": {
+        "id": 2,
+        "title": "Планка з віршем",
+        "description": "Протримайся в планці, поки читаєш короткий вірш.",
+        "category": "sport",
+        "difficulty": "easy",
+        "xp": 30
+      },
+      "status": "completed",
+      "started_at": "2026-11-25T12:00:00Z",
+      "completed_at": "2026-11-25T12:15:00Z",
+      "earned_xp": 30
+    }
+  ]
 }
+
 ```
 
 `display_name`, `nickname` and `avatar_id` may be `null` for profiles that have not been configured. `email` remains read-only in this API.
@@ -96,7 +115,16 @@ Updates the authenticated user's optional profile fields. Only fields present in
 
 At least one field must be supplied. Whitespace-only names are invalid. `email`, `id`, `total_xp`, `level`, `streak_days` and other statistics cannot be changed through this endpoint.
 
-**Success:** `200 OK`, returns the updated **Profile** object.
+**Success:** `200 OK`, response body is the **Profile**
+object above, including user statistics and the five most
+recent completed missions.
+
+The `recent_completed_missions` field contains up to five
+completed mission attempts, ordered by completion date
+(newest first). If the user has no completed missions,
+an empty array is returned.
+
+**Implementation status:** Implemented (RMG-60).
 
 **Errors:** `401` unauthenticated; `422` invalid field/value or empty update. Nickname uniqueness is **not required** in the current draft; see decisions to approve.
 
