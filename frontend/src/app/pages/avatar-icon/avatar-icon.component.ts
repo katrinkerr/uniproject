@@ -2,15 +2,6 @@ import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 
 import { AvatarId } from '../auth.models';
 
-const AVATAR_ICONS: Record<AvatarId, string> = {
-  fox: '🦊',
-  cat: '🐱',
-  owl: '🦉',
-  bear: '🐻',
-  rabbit: '🐰',
-  wolf: '🐺',
-};
-
 @Component({
   selector: 'app-avatar-icon',
   standalone: true,
@@ -31,7 +22,16 @@ const AVATAR_ICONS: Record<AvatarId, string> = {
 export class AvatarIconComponent {
   @Input({ required: true }) avatarId!: AvatarId;
 
+  readonly icons: Record<AvatarId, string> = {
+    fox: '🦊',
+    cat: '🐱',
+    owl: '🦉',
+    bear: '🐻',
+    rabbit: '🐰',
+    wolf: '🐺',
+  };
+
   get icon(): string {
-    return AVATAR_ICONS[this.avatarId];
+    return this.icons[this.avatarId];
   }
 }

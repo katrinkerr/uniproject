@@ -14,9 +14,9 @@
   </header>
 
   <nav class="sidebar" aria-label="Головне меню">
-    <a class="nav-item nav-item--active" href="#">🏠 <span>Головна</span></a>
+    <a class="nav-item nav-item--active" routerLink="/home">🏠 <span>Головна</span></a>
     <a class="nav-item" href="#">👥 <span>Друзі</span></a>
-    <a class="nav-item" href="#">👤 <span>Профіль</span></a>
+    <a class="nav-item" routerLink="/profile">👤 <span>Профіль</span></a>
   </nav>
 
   <main class="content">
@@ -117,11 +117,11 @@
 
     <!-- СТАТИСТИКА -->
     <section class="stats">
-      <div class="stat glass"><span class="stat__ic stat__ic--fire">🔥</span>
+      <div class="stat glass"><span class="stat__ic stat__ic--fire" aria-hidden="true">🔥</span>
         <div><b class="stat__n stat__n--orange">{{ streak() }}</b><span>Днів поспіль</span></div></div>
-      <div class="stat glass"><span class="stat__ic">⭐</span>
+      <div class="stat glass"><span class="stat__ic" aria-hidden="true">⭐</span>
         <div><b class="stat__n">{{ xp() }}</b><span>XP</span></div></div>
-      <div class="stat glass"><span class="stat__ic stat__ic--ok">✔</span>
+      <div class="stat glass"><span class="stat__ic stat__ic--ok" aria-hidden="true">✔</span>
         <div><b class="stat__n stat__n--green">{{ completed() }}</b><span>Виконаних місій</span></div></div>
     </section>
 

@@ -1,0 +1,157 @@
+<div class="profile-page">
+  <header class="topbar">
+    <span class="logo">PLOT.</span>
+    <div class="topbar__actions">
+      <button class="icon-btn" type="button" aria-label="Сповіщення">🔔</button>
+      <button class="icon-btn" type="button" aria-label="Налаштування">⚙️</button>
+    </div>
+  </header>
+
+  <nav class="sidebar" aria-label="Головне меню">
+    <a class="nav-item" routerLink="/home">Головна</a>
+    <a class="nav-item" href="#">Друзі</a>
+    <a class="nav-item nav-item--active" routerLink="/profile">Профіль</a>
+  </nav>
+
+  <main class="profile">
+    <section class="card hero">
+      <div class="hero__avatar">
+        <div class="hero__avatar-face" aria-label="Аватар користувача">
+          @if (user().photoUrl) {
+            <img class="hero__photo" [src]="user().photoUrl" alt="Фото користувача" />
+          } @else {
+            <app-avatar-icon [avatarId]="user().avatarId" [attr.title]="avatarLabel()" />
+          }
+        </div>
+        <button class="hero__edit" type="button" aria-label="Змінити аватар" (click)="editAvatar(avatarInput)">+</button>
+        <input
+          #avatarInput
+          class="avatar-input"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          (change)="onAvatarSelected($event)"
+        />
+        @if (avatarError()) {
+          <span class="avatar-error" role="alert">{{ avatarError() }}</span>
+        }
+      </div>
+
+      <div class="hero__info">
+        <h1>{{ user().name }}</h1>
+        <p class="hero__handle">{{ user().handle }}</p>
+        @if (profileLoading()) {
+          <p class="profile__status">Завантаження профілю...</p>
+        }
+        @if (profileError()) {
+          <p class="profile__status profile__status--error" role="alert">{{ profileError() }}</p>
+        }
+        <span class="level-chip">Рівень {{ user().level }}</span>
+        <div class="progress-row">
+          <div
+            class="bar"
+            role="progressbar"
+            [attr.aria-valuenow]="user().xp"
+            aria-valuemin="0"
+            [attr.aria-valuemax]="user().xpMax"
+          >
+            <div class="bar__fill" [style.width.%]="progress()"></div>
+          </div>
+          <span class="hero__xp-text">{{ user().xp }}/{{ user().xpMax }} XP</span>
+        </div>
+      </div>
+
+      <div class="hero__score" aria-label="{{ user().xp }} досвіду">
+        <span class="hero__star" aria-hidden="true"></span>
+        <strong>{{ user().xp }} xp</strong>
+      </div>
+    </section>
+
+    <section class="stats" aria-label="Статистика">
+      @for (s of stats(); track s.label) {
+        <article class="card stat stat--{{ s.tone }}">
+          <span class="stat__icon" aria-hidden="true">{{ s.icon }}</span>
+          <div class="stat__text">
+            <strong class="stat__value">{{ s.value }}</strong>
+            <span class="stat__label">{{ s.label }}</span>
+          </div>
+          <span class="stat__ghost" aria-hidden="true">{{ s.icon }}</span>
+        </article>
+      }
+    </section>
+
+    <section class="row">
+      <article class="card personal">
+        <h2>Персоналізовані завдання</h2>
+        <div class="personal__body">
+          <div class="personal__art" aria-hidden="true">
+            <span class="clipboard">
+              <span class="clipboard__clip"></span>
+              <span class="check check--one">✓</span>
+              <span class="check check--two">✓</span>
+              <span class="check check--three">✓</span>
+            </span>
+          </div>
+          <div class="personal__text">
+            <h3>Хочеш завдання підлаштоване під тебе?</h3>
+            <p>Пройди коротку анкету - і ми підберемо місії відповідно до твоїх інтересів, настрою та цілей.</p>
+            <button class="btn btn--primary" type="button" (click)="startSurvey()">
+              Пройти анкету
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <article class="card missions">
+        <header class="missions__head">
+          <h2>Активні місії</h2>
+          <span>{{ missions().length }} активні</span>
+        </header>
+        <ul class="missions__list">
+          @if (missionLoading()) {
+            <li class="missions__empty">Завантаження місій...</li>
+          }
+          @if (missionError()) {
+            <li class="missions__empty" role="alert">{{ missionError() }}</li>
+          }
+          @for (m of missions(); track m.id) {
+            <li class="mission">
+              <span class="mission__icon" aria-hidden="true">{{ categoryIcon(m.category) }}</span>
+              <div class="mission__main">
+                <span class="mission__category">{{ m.category }}</span>
+                <strong>{{ m.title }}</strong>
+              </div>
+              <span class="mission__xp">+{{ m.xp }} XP</span>
+              <button class="btn btn--small" type="button" (click)="completeMission(m.id)">Виконати</button>
+            </li>
+          } @empty {
+            @if (!missionLoading() && !missionError()) {
+              <li class="missions__empty">Усі місії виконано.</li>
+            }
+          }
+        </ul>
+      </article>
+    </section>
+
+    <section class="card friends">
+      <h2>Друзі</h2>
+      <div class="friends__list">
+        @for (f of friends(); track f.handle) {
+          <article class="friend">
+            <span class="friend__avatar">
+              <app-avatar-icon [avatarId]="f.avatarId" />
+            </span>
+            <div class="friend__info">
+              <strong>{{ f.name }}</strong>
+              <span>{{ f.handle }}</span>
+              <span>Рівень {{ f.level }}</span>
+            </div>
+          </article>
+        }
+        <button class="friend friend--add" type="button" (click)="addFriend()">
+          <span class="friend__plus">+</span>
+          <span>Додати друга</span>
+        </button>
+      </div>
+    </section>
+  </main>
+</div>

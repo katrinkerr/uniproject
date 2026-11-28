@@ -4,9 +4,10 @@ import { Observable, of } from 'rxjs';
 import { RegisterApiService, RegisterResponse } from './register-api.service';
 import { LoginApiService } from './login-api.service';
 import { LoginRequest, LoginResponse, RegisterRequest } from '../pages/auth.models';
-import { AuthApiService } from './auth-api.service';
+import { AuthApiService, CurrentUser } from './auth-api.service';
 
 const ACCESS_TOKEN_KEY = 'plot-access-token';
+const PROFILE_STORAGE_PREFIX = 'plot-profile';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -54,6 +55,17 @@ export class AuthService {
   }
 
   register(data: RegisterRequest): Observable<RegisterResponse> {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem(
+        `${PROFILE_STORAGE_PREFIX}:${data.email.toLowerCase()}`,
+        JSON.stringify({
+          name: data.name,
+          nickname: data.nickname,
+          avatarId: data.avatarId,
+        }),
+      );
+    }
+
     return this.registerApi.register({
       email: data.email,
       password: data.password,
@@ -62,6 +74,15 @@ export class AuthService {
 
   login(data: LoginRequest): Observable<LoginResponse> {
     return this.loginApi.login(data);
+  }
+
+  getCurrentUser(): Observable<CurrentUser | null> {
+    const accessToken = this.accessToken();
+    if (!accessToken) {
+      return of(null);
+    }
+
+    return this.authApi.getMe(accessToken);
   }
 
   private hasStoredSession(): boolean {

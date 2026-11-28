@@ -18,6 +18,12 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/home/home').then((module) => module.Home),
   },
   {
+    path: 'profile',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./pages/profile/profile').then((module) => module.Profile),
+  },
+  {
     path: 'register',
     canActivate: [guestGuard],
     loadComponent: () => import('./pages/reg/reg').then((module) => module.RegisterComponent),
