@@ -83,8 +83,22 @@ export class RegisterComponent {
 
     this.authService.register(request).subscribe({
       next: () => {
-        this.isLoading.set(false);
-        void this.router.navigate(['/login']);
+        this.authService.login({
+          email: profile.email,
+          password: profile.password,
+        }).subscribe({
+          next: (loginResponse) => {
+            this.authService.startSession(loginResponse.access_token);
+            this.isLoading.set(false);
+            void this.router.navigate(['/home']);
+          },
+          error: () => {
+            this.isLoading.set(false);
+            this.errorMessage.set(
+              'Реєстрація пройшла, але автоматичний вхід не вдався. Увійдіть вручну.',
+            );
+          },
+        });
       },
       error: (error: unknown) => {
         const status = error instanceof HttpErrorResponse ? error.status : 0;

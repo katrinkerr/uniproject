@@ -12,6 +12,11 @@ export interface LoginResponse {
   token_type: 'bearer';
 }
 
+export interface CurrentUser {
+  id: number;
+  email: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AuthApiService {
   private readonly http = inject(HttpClient);
@@ -20,6 +25,14 @@ export class AuthApiService {
   login(data: LoginRequest): Observable<LoginResponse> {
     return this.http
       .post<LoginResponse>(`${this.baseUrl}/auth/login`, data)
+      .pipe(timeout({ first: 15000 }));
+  }
+
+  getMe(accessToken: string): Observable<CurrentUser> {
+    return this.http
+      .get<CurrentUser>(`${this.baseUrl}/auth/me`, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
       .pipe(timeout({ first: 15000 }));
   }
 
